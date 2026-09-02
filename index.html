@@ -1,11 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Tung Tung Tung Tung Tung Sahur</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            background: #111;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: #111;
+        }
+
+        #dvd-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: min(28vw, 280px);
+            max-width: 80vw;
+            height: auto;
+            user-select: none;
+            pointer-events: none;
+            will-change: transform;
+        }
+    </style>
 </head>
 <body>
-    <img src = "imagens/ChatGPT Image 2 de set. de 2026, 17_32_07.png" Alt="natan tuffox">
+    <img id="dvd-image" src="imagens/ChatGPT Image 2 de set. de 2026, 17_32_07.png" alt="natan tuffox">
+
+    <script>
+        const image = document.querySelector('#dvd-image');
+        let positionX = 0;
+        let positionY = 0;
+        let velocityX = 2.4;
+        let velocityY = 2.4;
+
+        function moveImage() {
+            const maxX = window.innerWidth - image.offsetWidth;
+            const maxY = window.innerHeight - image.offsetHeight;
+
+            positionX += velocityX;
+            positionY += velocityY;
+
+            if (positionX <= 0 || positionX >= maxX) {
+                velocityX *= -1;
+                positionX = Math.max(0, Math.min(positionX, maxX));
+            }
+
+            if (positionY <= 0 || positionY >= maxY) {
+                velocityY *= -1;
+                positionY = Math.max(0, Math.min(positionY, maxY));
+            }
+
+            image.style.transform = `translate(${positionX}px, ${positionY}px)`;
+            requestAnimationFrame(moveImage);
+        }
+
+        moveImage();
+    </script>
 </body>
 </html>
