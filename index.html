@@ -3,352 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tung Tung Tung Tung Tung Sahur</title>
+    <title>Tung Pong</title>
     <style>
-            :root {
-                color-scheme: dark;
-                --ink: #f8f1df;
-                --muted: #b9b19c;
-                --court: #18251f;
-                --court-light: #22392d;
-                --accent: #f4c95d;
-                --danger: #ef6f61;
-            }
-
-            * {
-                box-sizing: border-box;
-            }
-
-            html,
-            body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                overflow: hidden;
-                background: #101815;
-                color: var(--ink);
-                font-family: Georgia, 'Times New Roman', serif;
-            }
-
-            body {
-                display: grid;
-                place-items: center;
-            }
-
-            #game {
-                position: relative;
-                width: 100vw;
-                height: 100vh;
-                overflow: hidden;
-                background: radial-gradient(circle at 50% -20%, var(--court-light), var(--court) 58%, #101815);
-                cursor: none;
-            }
-
-            #game::before,
-            #game::after {
-                position: absolute;
-                content: '';
-                left: 7%;
-                right: 7%;
-                height: 1px;
-                background: rgba(244, 201, 93, 0.28);
-            }
-
-            #game::before {
-                top: 12%;
-            }
-
-            #game::after {
-                bottom: 8%;
-            }
-
-            .hud {
-                position: absolute;
-                z-index: 2;
-                top: 28px;
-                left: 7%;
-                right: 7%;
-                display: flex;
-                justify-content: space-between;
-                align-items: end;
-                pointer-events: none;
-            }
-
-            .title {
-                margin: 0;
-                color: var(--accent);
-                font-size: clamp(1.5rem, 4vw, 3rem);
-                letter-spacing: 0.04em;
-                text-transform: uppercase;
-            }
-
-            .hint {
-                margin: 5px 0 0;
-                color: var(--muted);
-                font-family: 'Trebuchet MS', sans-serif;
-                font-size: 0.78rem;
-                letter-spacing: 0.11em;
-                text-transform: uppercase;
-            }
-
-            .stats {
-                display: flex;
-                gap: clamp(18px, 4vw, 55px);
-                font-family: 'Trebuchet MS', sans-serif;
-                font-size: 0.78rem;
-                letter-spacing: 0.1em;
-                text-align: right;
-                text-transform: uppercase;
-            }
-
-            .stats strong {
-                display: block;
-                margin-top: 3px;
-                color: var(--accent);
-                font-family: Georgia, 'Times New Roman', serif;
-                font-size: clamp(1.5rem, 4vw, 2.3rem);
-                letter-spacing: 0;
-            }
-
-            #ball,
-            #player {
-                position: absolute;
-                z-index: 1;
-                user-select: none;
-                pointer-events: none;
-                will-change: transform;
-            }
-
-            #ball {
-                width: clamp(58px, 9vw, 105px);
-                height: auto;
-            }
-
-            #player {
-                bottom: 4%;
-                width: clamp(130px, 18vw, 220px);
-                height: auto;
-                transform: translateX(-50%);
-            }
-
-            #message {
-                position: absolute;
-                z-index: 3;
-                top: 50%;
-                left: 50%;
-                width: min(90vw, 420px);
-                padding: 24px;
-                border: 1px solid rgba(244, 201, 93, 0.55);
-                background: rgba(16, 24, 21, 0.94);
-                text-align: center;
-                transform: translate(-50%, -50%);
-            }
-
-            #message h2 {
-                margin: 0 0 8px;
-                color: var(--accent);
-                font-size: 2rem;
-            }
-
-            #message p {
-                margin: 0 0 18px;
-                color: var(--muted);
-                font-family: 'Trebuchet MS', sans-serif;
-            }
-
-            #restart {
-                padding: 11px 18px;
-                border: 0;
-                background: var(--accent);
-                color: #18251f;
-                font: bold 0.78rem 'Trebuchet MS', sans-serif;
-                letter-spacing: 0.1em;
-                text-transform: uppercase;
-                cursor: pointer;
-            }
-
-            .hidden {
-                display: none;
-            }
-
-            @media (max-width: 600px) {
-                .hud {
-                    top: 20px;
-                    align-items: start;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-
-                .stats {
-                    width: 100%;
-                    justify-content: space-between;
-                    text-align: left;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <main id="game" aria-label="Jogo TungTung Rebatedor">
-            <header class="hud">
-                <div>
-                    <h1 class="title">TungTung Rebatedor</h1>
-                    <p class="hint">Use as setas ou A e D para mover</p>
-                </div>
-                <div class="stats">
-                    <div>Pontos<strong id="score">0</strong></div>
-                    <div>Vidas<strong id="lives">3</strong></div>
-                </div>
-            </header>
-
-            <img id="ball" src="imagens/images-removebg-preview.png" alt="Bola">
-            <img id="player" src="imagens/image-0-removebg-preview.png" alt="TungTung, o rebatedor">
-
-            <section id="message" class="hidden" aria-live="polite">
-                <h2>Fim de jogo</h2>
-                <p>Você marcou <strong id="final-score">0</strong> pontos.</p>
-                <button id="restart" type="button">Jogar novamente</button>
-            </section>
-        </main>
-
-        <script>
-            const game = document.querySelector('#game');
-            const ball = document.querySelector('#ball');
-            const player = document.querySelector('#player');
-            const scoreDisplay = document.querySelector('#score');
-            const livesDisplay = document.querySelector('#lives');
-            const message = document.querySelector('#message');
-            const finalScore = document.querySelector('#final-score');
-            const restartButton = document.querySelector('#restart');
-            const keys = new Set();
-            let playerX;
-            let ballX;
-            let ballY;
-            let ballSpeed;
-            let horizontalSpeed;
-            let score;
-            let lives;
-            let running;
-
-            function resetGame() {
-                playerX = game.clientWidth / 2;
-                ballX = game.clientWidth / 2;
-                ballY = 130;
-                ballSpeed = 4.5;
-                horizontalSpeed = 2.4;
-                score = 0;
-                lives = 3;
-                running = true;
-                message.classList.add('hidden');
-                scoreDisplay.textContent = score;
-                livesDisplay.textContent = lives;
-            }
-
-            function update() {
-                if (!running) {
-                    requestAnimationFrame(update);
-                    return;
-                }
-
-                const playerWidth = player.offsetWidth;
-                const ballSize = ball.offsetWidth;
-                const playerY = game.clientHeight - player.offsetHeight - game.clientHeight * 0.04;
-                const maxPlayerX = game.clientWidth - playerWidth / 2;
-
-                if (keys.has('ArrowLeft') || keys.has('a')) playerX -= 8;
-                if (keys.has('ArrowRight') || keys.has('d')) playerX += 8;
-                playerX = Math.max(playerWidth / 2, Math.min(playerX, maxPlayerX));
-
-                ballY += ballSpeed;
-                ballX += horizontalSpeed;
-                if (ballX <= ballSize / 2 || ballX >= game.clientWidth - ballSize / 2) {
-                    horizontalSpeed *= -1;
-                    ballX = Math.max(ballSize / 2, Math.min(ballX, game.clientWidth - ballSize / 2));
-                }
-
-                const hittingPlayer = ballY + ballSize >= playerY &&
-                    ballY <= playerY + player.offsetHeight * 0.72 &&
-                    Math.abs(ballX - playerX) < playerWidth * 0.46;
-
-                if (hittingPlayer && ballSpeed > 0) {
-                    ballY = playerY - ballSize;
-                    ballSpeed = -(Math.abs(ballSpeed) + 0.18);
-                    horizontalSpeed += (ballX - playerX) * 0.015;
-                    score += 1;
-                    scoreDisplay.textContent = score;
-                }
-
-                if (ballY < 78) ballSpeed = Math.abs(ballSpeed);
-                if (ballY > game.clientHeight + ballSize) {
-                    lives -= 1;
-                    livesDisplay.textContent = lives;
-                    ballX = Math.random() * (game.clientWidth - ballSize) + ballSize / 2;
-                    ballY = 110;
-                    ballSpeed = Math.abs(ballSpeed) + 0.4;
-                    if (lives <= 0) endGame();
-                }
-
-                player.style.left = `${playerX}px`;
-                ball.style.transform = `translate(${ballX - ballSize / 2}px, ${ballY}px)`;
-                requestAnimationFrame(update);
-            }
-
-            function endGame() {
-                running = false;
-                finalScore.textContent = score;
-                message.classList.remove('hidden');
-            }
-
-            window.addEventListener('keydown', (event) => {
-                if (['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(event.key)) {
-                    event.preventDefault();
-                    keys.add(event.key);
-                }
-            });
-
-            window.addEventListener('keyup', (event) => keys.delete(event.key));
-            restartButton.addEventListener('click', resetGame);
-            window.addEventListener('resize', () => {
-                playerX = Math.min(playerX, game.clientWidth - player.offsetWidth / 2);
-            });
-
-            resetGame();
-            update();
-        </script>
-    </body>
-    </html>
-</head>
-<body>
-    <img id="dvd-image" src="imagens/ChatGPT Image 2 de set. de 2026, 17_32_07.png" alt="natan tuffox">
-
-    <script>
-        const image = document.querySelector('#dvd-image');
-        let positionX = 0;
-        let positionY = 0;
-        let velocityX = 6.5;
-        let velocityY = 6.5;
-
-        function moveImage() {
-            const maxX = window.innerWidth - image.offsetWidth;
-            const maxY = window.innerHeight - image.offsetHeight;
-
-            positionX += velocityX;
-            positionY += velocityY;
-
-            if (positionX <= 0 || positionX >= maxX) {
-                velocityX *= -1;
-                positionX = Math.max(0, Math.min(positionX, maxX));
-            }
-
-            if (positionY <= 0 || positionY >= maxY) {
-                velocityY *= -1;
-                positionY = Math.max(0, Math.min(positionY, maxY));
-            }
-
-            image.style.transform = `translate(${positionX}px, ${positionY}px)`;
-            requestAnimationFrame(moveImage);
+        :root {
+            color-scheme: dark;
+            --ink: #fff5d7;
+            --muted: #c4b98f;
+            --court: #173b38;
+            --court-light: #2d6757;
+            --accent: #f4c95d;
         }
 
-        moveImage();
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: #102523;
+            color: var(--ink);
+            font-family: Georgia, 'Times New Roman', serif;
+        }
+
+        body { display: grid; place-items: center; }
+
+        #game {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background:
+                linear-gradient(90deg, transparent 49.8%, rgba(255, 245, 215, .22) 50%, transparent 50.2%),
+                radial-gradient(ellipse at center, var(--court-light), var(--court) 68%, #102523);
+            cursor: none;
+        }
+
+        #game::before {
+            content: '';
+            position: absolute;
+            inset: 15% 8% 9%;
+            border: 1px solid rgba(244, 201, 93, .35);
+            border-radius: 50%;
+            box-shadow: 0 0 0 18vw rgba(16, 37, 35, .16);
+            pointer-events: none;
+        }
+
+        .hud {
+            position: absolute;
+            z-index: 4;
+            top: 26px;
+            left: 7%;
+            right: 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            pointer-events: none;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--accent);
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .hint, .label {
+            color: var(--muted);
+            font: .74rem 'Trebuchet MS', sans-serif;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .hint { margin: 6px 0 0; }
+
+        .scoreboard {
+            display: flex;
+            gap: clamp(25px, 6vw, 80px);
+            text-align: center;
+        }
+
+        .scoreboard strong {
+            display: block;
+            color: var(--accent);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1;
+        }
+
+        .court-line {
+            position: absolute;
+            top: 15%;
+            bottom: 9%;
+            left: 50%;
+            border-left: 2px dashed rgba(255, 245, 215, .4);
+            transform: translateX(-50%);
+        }
+
+        .player, #ball, #slash {
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .player {
+            z-index: 2;
+            width: clamp(76px, 10vw, 128px);
+            height: auto;
+            transform: translateY(-50%);
+            filter: drop-shadow(0 7px 4px rgba(0, 0, 0, .32));
+        }
+
+        #player-one { left: 7%; }
+        #player-two { right: 7%; }
+
+        #ball {
+            z-index: 3;
+            width: clamp(34px, 5vw, 62px);
+            height: auto;
+            transform-origin: center;
+        }
+
+        #slash {
+            z-index: 5;
+            display: none;
+            width: clamp(110px, 15vw, 190px);
+            transform: translate(-50%, -50%);
+        }
+
+        #slash.visible { display: block; animation: slash-hit .22s ease-out; }
+
+        @keyframes slash-hit {
+            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(-18deg); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+        }
+
+        #message {
+            position: absolute;
+            z-index: 8;
+            top: 50%;
+            left: 50%;
+            width: min(90vw, 420px);
+            padding: 28px;
+            border: 1px solid rgba(244, 201, 93, .6);
+            background: rgba(16, 37, 35, .96);
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+
+        #message h2 { margin: 0 0 8px; color: var(--accent); font-size: 2rem; }
+        #message p { margin: 0 0 20px; color: var(--muted); font-family: 'Trebuchet MS', sans-serif; }
+        #restart {
+            padding: 11px 18px;
+            border: 0;
+            background: var(--accent);
+            color: #173b38;
+            font: bold .75rem 'Trebuchet MS', sans-serif;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .hud { top: 18px; left: 5%; right: 5%; align-items: start; flex-direction: column; gap: 12px; }
+            .scoreboard { width: 100%; justify-content: space-between; }
+            .hint { font-size: .65rem; }
+            #player-one { left: 2%; }
+            #player-two { right: 2%; }
+        }
+    </style>
+</head>
+<body>
+    <main id="game" aria-label="Jogo de ping pong Tung Pong">
+        <header class="hud">
+            <div>
+                <h1>Tung Pong</h1>
+                <p class="hint">P1: W / S &nbsp; | &nbsp; P2: ↑ / ↓</p>
+            </div>
+            <div class="scoreboard" aria-live="polite">
+                <div><span class="label">Tung 1</span><strong id="score-one">0</strong></div>
+                <div><span class="label">Tung 2</span><strong id="score-two">0</strong></div>
+            </div>
+        </header>
+
+        <div class="court-line" aria-hidden="true"></div>
+        <img id="player-one" class="player" src="imagens/tung_1.png" alt="Tung 1, jogador 1">
+        <img id="player-two" class="player" src="imagens/tung_2.png" alt="Tung 2, jogador 2">
+        <img id="ball" src="imagens/bola.png" alt="Bola">
+        <img id="slash" src="imagens/slash.gif" alt="">
+
+        <section id="message" class="hidden" aria-live="assertive">
+            <h2 id="winner">Fim de jogo</h2>
+            <p id="final-score"></p>
+            <button id="restart" type="button">Jogar novamente</button>
+        </section>
+    </main>
+
+    <script>
+        const game = document.querySelector('#game');
+        const ball = document.querySelector('#ball');
+        const playerOne = document.querySelector('#player-one');
+        const playerTwo = document.querySelector('#player-two');
+        const slash = document.querySelector('#slash');
+        const scoreOneDisplay = document.querySelector('#score-one');
+        const scoreTwoDisplay = document.querySelector('#score-two');
+        const message = document.querySelector('#message');
+        const winnerDisplay = document.querySelector('#winner');
+        const finalScore = document.querySelector('#final-score');
+        const keys = new Set();
+        let ballX, ballY, velocityX, velocityY, rotation, scoreOne, scoreTwo, running;
+        let playerOneY, playerTwoY, lastHit = 0;
+
+        function resetGame() {
+            ballX = game.clientWidth / 2;
+            ballY = game.clientHeight / 2;
+            velocityX = Math.random() > .5 ? 5 : -5;
+            velocityY = (Math.random() * 4) - 2;
+            rotation = 0;
+            scoreOne = 0;
+            scoreTwo = 0;
+            playerOneY = playerTwoY = game.clientHeight / 2;
+            running = true;
+            message.classList.add('hidden');
+            scoreOneDisplay.textContent = scoreOne;
+            scoreTwoDisplay.textContent = scoreTwo;
+        }
+
+        function showSlash(x, y) {
+            slash.style.left = `${x}px`;
+            slash.style.top = `${y}px`;
+            slash.classList.remove('visible');
+            void slash.offsetWidth;
+            slash.classList.add('visible');
+            clearTimeout(lastHit);
+            lastHit = setTimeout(() => slash.classList.remove('visible'), 260);
+        }
+
+        function update() {
+            if (!running) { requestAnimationFrame(update); return; }
+            const playerHeight = playerOne.offsetHeight;
+            const ballSize = ball.offsetWidth;
+            const topLimit = game.clientHeight * .16 + playerHeight / 2;
+            const bottomLimit = game.clientHeight * .91 - playerHeight / 2;
+            const paddleWidth = playerOne.offsetWidth;
+            const paddleGap = game.clientWidth * .07;
+
+            if (keys.has('w')) playerOneY -= 8;
+            if (keys.has('s')) playerOneY += 8;
+            if (keys.has('ArrowUp')) playerTwoY -= 8;
+            if (keys.has('ArrowDown')) playerTwoY += 8;
+            playerOneY = Math.max(topLimit, Math.min(playerOneY, bottomLimit));
+            playerTwoY = Math.max(topLimit, Math.min(playerTwoY, bottomLimit));
+
+            ballX += velocityX;
+            ballY += velocityY;
+            rotation += velocityX * 2.5;
+            if (ballY <= topLimit || ballY >= bottomLimit) {
+                velocityY *= -1;
+                ballY = Math.max(topLimit, Math.min(ballY, bottomLimit));
+            }
+
+            const hitsPaddle = (paddleY, isLeft) => {
+                const paddleX = isLeft ? paddleGap + paddleWidth / 2 : game.clientWidth - paddleGap - paddleWidth / 2;
+                const movingToward = isLeft ? velocityX < 0 : velocityX > 0;
+                return movingToward && Math.abs(ballX - paddleX) < paddleWidth / 2 + ballSize / 2 &&
+                    Math.abs(ballY - paddleY) < playerHeight / 2 + ballSize / 2;
+            };
+
+            if (hitsPaddle(playerOneY, true)) {
+                ballX = paddleGap + paddleWidth + ballSize / 2;
+                velocityX = Math.abs(velocityX) + .12;
+                velocityY += (ballY - playerOneY) * .035;
+                showSlash(paddleGap + paddleWidth, playerOneY);
+            } else if (hitsPaddle(playerTwoY, false)) {
+                ballX = game.clientWidth - paddleGap - paddleWidth - ballSize / 2;
+                velocityX = -Math.abs(velocityX) - .12;
+                velocityY += (ballY - playerTwoY) * .035;
+                showSlash(game.clientWidth - paddleGap - paddleWidth, playerTwoY);
+            }
+
+            if (ballX < -ballSize) { scoreTwo++; scoreTwoDisplay.textContent = scoreTwo; resetRound(1); }
+            if (ballX > game.clientWidth + ballSize) { scoreOne++; scoreOneDisplay.textContent = scoreOne; resetRound(-1); }
+
+            playerOne.style.top = `${playerOneY}px`;
+            playerTwo.style.top = `${playerTwoY}px`;
+            ball.style.transform = `translate(${ballX - ballSize / 2}px, ${ballY - ballSize / 2}px) rotate(${rotation}deg)`;
+            requestAnimationFrame(update);
+        }
+
+        function resetRound(direction) {
+            if (scoreOne >= 7 || scoreTwo >= 7) {
+                running = false;
+                winnerDisplay.textContent = scoreOne > scoreTwo ? 'Tung 1 venceu!' : 'Tung 2 venceu!';
+                finalScore.textContent = `${scoreOne} a ${scoreTwo}`;
+                message.classList.remove('hidden');
+                return;
+            }
+            ballX = game.clientWidth / 2;
+            ballY = game.clientHeight / 2;
+            velocityX = direction * 5;
+            velocityY = (Math.random() * 4) - 2;
+        }
+
+        window.addEventListener('keydown', (event) => {
+            if (['w', 's', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+                event.preventDefault();
+                keys.add(event.key);
+            }
+        });
+        window.addEventListener('keyup', (event) => keys.delete(event.key));
+        document.querySelector('#restart').addEventListener('click', resetGame);
+        window.addEventListener('resize', () => {
+            playerOneY = Math.min(playerOneY, game.clientHeight * .91 - playerOne.offsetHeight / 2);
+            playerTwoY = Math.min(playerTwoY, game.clientHeight * .91 - playerTwo.offsetHeight / 2);
+        });
+        resetGame();
+        update();
     </script>
 </body>
 </html>
