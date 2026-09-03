@@ -108,7 +108,7 @@
 
         .player {
             z-index: 2;
-            width: clamp(86px, 11vw, 145px);
+            width: clamp(103px, 13vw, 174px);
             height: auto;
             transform: translateY(-50%);
             filter: drop-shadow(0 7px 4px rgba(0, 0, 0, .32));
@@ -249,7 +249,8 @@
         const finalScore = document.querySelector('#final-score');
         const keys = new Set();
         let ballX, ballY, velocityX, velocityY, rotation, gameSpeed, scoreOne, scoreTwo, running;
-        let playerOneY, playerTwoY, lastHit = 0, restartTimer = 0;
+        let playerOneY, playerTwoY, playerOneVelocity = 0, playerTwoVelocity = 0;
+        let lastHit = 0, restartTimer = 0;
 
         function resetGame() {
             ballX = game.clientWidth / 2;
@@ -261,6 +262,7 @@
             scoreOne = 0;
             scoreTwo = 0;
             playerOneY = playerTwoY = game.clientHeight / 2;
+            playerOneVelocity = playerTwoVelocity = 0;
             running = true;
             message.classList.add('hidden');
             scoreOneDisplay.textContent = scoreOne;
@@ -291,10 +293,16 @@
             const paddleWidth = playerOne.offsetWidth;
             const paddleGap = game.clientWidth * .07;
 
-            if (keys.has('w')) playerOneY -= 9.6;
-            if (keys.has('s')) playerOneY += 9.6;
-            if (keys.has('ArrowUp')) playerTwoY -= 9.6;
-            if (keys.has('ArrowDown')) playerTwoY += 9.6;
+            if (keys.has('w')) playerOneVelocity -= 1.2;
+            if (keys.has('s')) playerOneVelocity += 1.2;
+            if (keys.has('ArrowUp')) playerTwoVelocity -= 1.2;
+            if (keys.has('ArrowDown')) playerTwoVelocity += 1.2;
+            playerOneVelocity *= .84;
+            playerTwoVelocity *= .84;
+            playerOneVelocity = Math.max(-9.6, Math.min(playerOneVelocity, 9.6));
+            playerTwoVelocity = Math.max(-9.6, Math.min(playerTwoVelocity, 9.6));
+            playerOneY += playerOneVelocity;
+            playerTwoY += playerTwoVelocity;
             playerOneY = Math.max(playerTopLimit, Math.min(playerOneY, playerBottomLimit));
             playerTwoY = Math.max(playerTopLimit, Math.min(playerTwoY, playerBottomLimit));
 
@@ -328,7 +336,7 @@
                 ballX = paddleGap + paddleWidth + ballSize / 2;
                 velocityX = gameSpeed;
                 velocityY += (ballY - playerOneY) * .035;
-                showSlash(paddleGap + paddleWidth, playerOneY, 180);
+                showSlash(paddleGap + paddleWidth, playerOneY, 270);
             } else if (hitsPaddle(playerTwoY, false)) {
                 ballX = game.clientWidth - paddleGap - paddleWidth - ballSize / 2;
                 velocityX = -gameSpeed;
