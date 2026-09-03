@@ -138,14 +138,14 @@
             z-index: 5;
             display: none;
             width: clamp(110px, 15vw, 190px);
-            transform: translate(-50%, -50%) rotate(var(--slash-angle, 80deg));
+            transform: translate(-50%, -50%) rotate(var(--slash-angle, 80deg)) scaleX(-1);
         }
 
         #slash.visible { display: block; animation: slash-hit .22s ease-out; }
 
         @keyframes slash-hit {
-            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(calc(var(--slash-angle, 80deg) - 18deg)); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--slash-angle, 80deg)); }
+            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(calc(var(--slash-angle, 80deg) - 18deg)) scaleX(-1); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--slash-angle, 80deg)) scaleX(-1); }
         }
 
         #easteregg {
@@ -294,6 +294,7 @@
             playerOneY = Math.max(topLimit, Math.min(playerOneY, bottomLimit));
             playerTwoY = Math.max(topLimit, Math.min(playerTwoY, bottomLimit));
 
+            const previousBallX = ballX;
             ballX += velocityX;
             ballY += velocityY;
             gameSpeed = Math.min(24, gameSpeed + .018);
@@ -306,9 +307,13 @@
             }
 
             const hitsPaddle = (paddleY, isLeft) => {
-                const paddleX = isLeft ? paddleGap + paddleWidth / 2 : game.clientWidth - paddleGap - paddleWidth / 2;
+                const paddleEdge = isLeft ? paddleGap + paddleWidth : game.clientWidth - paddleGap - paddleWidth;
+                const ballRadius = ballSize / 2;
                 const movingToward = isLeft ? velocityX < 0 : velocityX > 0;
-                return movingToward && Math.abs(ballX - paddleX) < paddleWidth / 2 + ballSize / 2 &&
+                const crossedPaddle = isLeft
+                    ? previousBallX - ballRadius > paddleEdge && ballX - ballRadius <= paddleEdge
+                    : previousBallX + ballRadius < paddleEdge && ballX + ballRadius >= paddleEdge;
+                return movingToward && crossedPaddle &&
                     Math.abs(ballY - paddleY) < playerHeight / 2 + ballSize / 2;
             };
 
@@ -356,6 +361,7 @@
             }
             ballX = game.clientWidth / 2;
             ballY = game.clientHeight / 2;
+            gameSpeed = 5;
             velocityX = direction * 5;
             velocityY = (Math.random() * 4) - 2;
         }
