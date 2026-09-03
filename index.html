@@ -108,7 +108,7 @@
 
         .player {
             z-index: 2;
-            width: clamp(76px, 10vw, 128px);
+            width: clamp(86px, 11vw, 145px);
             height: auto;
             transform: translateY(-50%);
             filter: drop-shadow(0 7px 4px rgba(0, 0, 0, .32));
@@ -282,8 +282,12 @@
             if (!running) { requestAnimationFrame(update); return; }
             const playerHeight = playerOne.offsetHeight;
             const ballSize = ball.offsetWidth;
-            const topLimit = game.clientHeight * .16 + playerHeight / 2;
-            const bottomLimit = game.clientHeight * .91 - playerHeight / 2;
+            const topLine = game.clientHeight * .15;
+            const bottomLine = game.clientHeight * .91;
+            const topLimit = topLine + ballSize / 2;
+            const bottomLimit = bottomLine - ballSize / 2;
+            const playerTopLimit = topLine + playerHeight / 2;
+            const playerBottomLimit = bottomLine - playerHeight / 2;
             const paddleWidth = playerOne.offsetWidth;
             const paddleGap = game.clientWidth * .07;
 
@@ -291,17 +295,20 @@
             if (keys.has('s')) playerOneY += 9.6;
             if (keys.has('ArrowUp')) playerTwoY -= 9.6;
             if (keys.has('ArrowDown')) playerTwoY += 9.6;
-            playerOneY = Math.max(topLimit, Math.min(playerOneY, bottomLimit));
-            playerTwoY = Math.max(topLimit, Math.min(playerTwoY, bottomLimit));
+            playerOneY = Math.max(playerTopLimit, Math.min(playerOneY, playerBottomLimit));
+            playerTwoY = Math.max(playerTopLimit, Math.min(playerTwoY, playerBottomLimit));
 
             const previousBallX = ballX;
+            const previousBallY = ballY;
             ballX += velocityX;
             ballY += velocityY;
             gameSpeed = Math.min(24, gameSpeed + .018);
             velocityX = Math.sign(velocityX) * gameSpeed;
             velocityY = Math.sign(velocityY) * Math.min(16, Math.abs(velocityY) + .01);
             rotation += velocityX * 2.5;
-            if (ballY <= topLimit || ballY >= bottomLimit) {
+            const touchedTopLine = previousBallY >= topLimit && ballY < topLimit;
+            const touchedBottomLine = previousBallY <= bottomLimit && ballY > bottomLimit;
+            if (touchedTopLine || touchedBottomLine) {
                 velocityY *= -1;
                 ballY = Math.max(topLimit, Math.min(ballY, bottomLimit));
             }
@@ -321,7 +328,7 @@
                 ballX = paddleGap + paddleWidth + ballSize / 2;
                 velocityX = gameSpeed;
                 velocityY += (ballY - playerOneY) * .035;
-                showSlash(paddleGap + paddleWidth, playerOneY, 80);
+                showSlash(paddleGap + paddleWidth, playerOneY, 180);
             } else if (hitsPaddle(playerTwoY, false)) {
                 ballX = game.clientWidth - paddleGap - paddleWidth - ballSize / 2;
                 velocityX = -gameSpeed;
@@ -375,8 +382,9 @@
         window.addEventListener('keyup', (event) => keys.delete(event.key));
         document.querySelector('#restart').addEventListener('click', resetGame);
         window.addEventListener('resize', () => {
-            playerOneY = Math.min(playerOneY, game.clientHeight * .91 - playerOne.offsetHeight / 2);
-            playerTwoY = Math.min(playerTwoY, game.clientHeight * .91 - playerTwo.offsetHeight / 2);
+            const bottomLimit = game.clientHeight * .91 - ball.offsetWidth / 2;
+            playerOneY = Math.min(playerOneY, bottomLimit);
+            playerTwoY = Math.min(playerTwoY, bottomLimit);
         });
         resetGame();
         update();
