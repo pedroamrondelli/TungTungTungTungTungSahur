@@ -128,14 +128,14 @@
             z-index: 5;
             display: none;
             width: clamp(110px, 15vw, 190px);
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotate(180deg);
         }
 
         #slash.visible { display: block; animation: slash-hit .22s ease-out; }
 
         @keyframes slash-hit {
-            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(-18deg); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(162deg); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(180deg); }
         }
 
         #message {
@@ -212,7 +212,7 @@
         const winnerDisplay = document.querySelector('#winner');
         const finalScore = document.querySelector('#final-score');
         const keys = new Set();
-        let ballX, ballY, velocityX, velocityY, rotation, scoreOne, scoreTwo, running;
+        let ballX, ballY, velocityX, velocityY, rotation, gameSpeed, scoreOne, scoreTwo, running;
         let playerOneY, playerTwoY, lastHit = 0;
 
         function resetGame() {
@@ -220,6 +220,7 @@
             ballY = game.clientHeight / 2;
             velocityX = Math.random() > .5 ? 5 : -5;
             velocityY = (Math.random() * 4) - 2;
+            gameSpeed = 5;
             rotation = 0;
             scoreOne = 0;
             scoreTwo = 0;
@@ -258,6 +259,8 @@
 
             ballX += velocityX;
             ballY += velocityY;
+            gameSpeed = Math.min(15, gameSpeed + .008);
+            velocityX = Math.sign(velocityX) * gameSpeed;
             rotation += velocityX * 2.5;
             if (ballY <= topLimit || ballY >= bottomLimit) {
                 velocityY *= -1;
@@ -273,12 +276,12 @@
 
             if (hitsPaddle(playerOneY, true)) {
                 ballX = paddleGap + paddleWidth + ballSize / 2;
-                velocityX = Math.abs(velocityX) + .12;
+                velocityX = gameSpeed;
                 velocityY += (ballY - playerOneY) * .035;
                 showSlash(paddleGap + paddleWidth, playerOneY);
             } else if (hitsPaddle(playerTwoY, false)) {
                 ballX = game.clientWidth - paddleGap - paddleWidth - ballSize / 2;
-                velocityX = -Math.abs(velocityX) - .12;
+                velocityX = -gameSpeed;
                 velocityY += (ballY - playerTwoY) * .035;
                 showSlash(game.clientWidth - paddleGap - paddleWidth, playerTwoY);
             }
