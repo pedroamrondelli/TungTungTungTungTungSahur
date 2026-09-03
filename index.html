@@ -100,7 +100,7 @@
             transform: translateX(-50%);
         }
 
-        .player, #ball, #fire, #slash {
+        .player, #ball, #trail, #slash, #easteregg {
             position: absolute;
             user-select: none;
             pointer-events: none;
@@ -124,45 +124,50 @@
             transform-origin: center;
         }
 
-        #fire {
+        #trail {
             z-index: 2;
-            width: clamp(62px, 9vw, 108px);
-            height: clamp(62px, 9vw, 108px);
-            border-radius: 50% 45% 52% 48%;
-            background:
-                radial-gradient(circle at 68% 28%, #8e42d8 0 12%, transparent 27%),
-                radial-gradient(circle at 28% 34%, #1f8fff 0 14%, transparent 31%),
-                radial-gradient(circle at 72% 68%, #e62f42 0 22%, transparent 47%),
-                radial-gradient(circle at 37% 70%, #ff9d22 0 26%, transparent 56%);
-            filter: blur(4px) drop-shadow(0 0 10px #ef4a39);
-            animation: fire-flicker .3s infinite alternate, fire-colors 2.8s infinite;
+            width: clamp(24px, 4vw, 48px);
+            height: clamp(5px, 1vw, 10px);
+            border-radius: 50%;
+            background: linear-gradient(90deg, transparent, rgba(244, 201, 93, .8));
+            filter: blur(2px);
             transform-origin: center;
-        }
-
-        @keyframes fire-flicker {
-            from { opacity: .82; scale: .9 .98; }
-            to { opacity: 1; scale: 1.08 .92; }
-        }
-
-        @keyframes fire-colors {
-            0%, 100% { filter: blur(4px) drop-shadow(0 0 10px #ff7b1c); }
-            35% { filter: blur(4px) drop-shadow(0 0 10px #ed3049); }
-            68% { filter: blur(4px) drop-shadow(0 0 10px #277cff); }
-            85% { filter: blur(4px) drop-shadow(0 0 10px #9145dc); }
         }
 
         #slash {
             z-index: 5;
             display: none;
             width: clamp(110px, 15vw, 190px);
-            transform: translate(-50%, -50%) rotate(80deg);
+            transform: translate(-50%, -50%) rotate(var(--slash-angle, 80deg));
         }
 
         #slash.visible { display: block; animation: slash-hit .22s ease-out; }
 
         @keyframes slash-hit {
-            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(62deg); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(80deg); }
+            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(calc(var(--slash-angle, 80deg) - 18deg)); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(var(--slash-angle, 80deg)); }
+        }
+
+        #easteregg {
+            z-index: 9;
+            display: none;
+            top: 50%;
+            left: 50%;
+            width: min(78vw, 520px);
+            max-height: 70vh;
+            object-fit: contain;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 24px rgba(244, 201, 93, .7));
+        }
+
+        #easteregg.visible {
+            display: block;
+            animation: easteregg-in .25s ease-out;
+        }
+
+        @keyframes easteregg-in {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(.75); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
         #message {
@@ -217,9 +222,10 @@
         <div class="court-line" aria-hidden="true"></div>
         <img id="player-one" class="player" src="imagens/tung_1.png" alt="Tung 1, jogador 1">
         <img id="player-two" class="player" src="imagens/tung_2.png" alt="Tung 2, jogador 2">
-        <div id="fire" aria-hidden="true"></div>
+        <div id="trail" aria-hidden="true"></div>
         <img id="ball" src="imagens/bola.png" alt="Bola">
         <img id="slash" src="imagens/slash.gif" alt="">
+        <img id="easteregg" src="imagens/easteregg.png" alt="">
 
         <section id="message" class="hidden" aria-live="assertive">
             <h2 id="winner">Fim de jogo</h2>
@@ -233,8 +239,9 @@
         const ball = document.querySelector('#ball');
         const playerOne = document.querySelector('#player-one');
         const playerTwo = document.querySelector('#player-two');
-        const fire = document.querySelector('#fire');
+        const trail = document.querySelector('#trail');
         const slash = document.querySelector('#slash');
+        const easteregg = document.querySelector('#easteregg');
         const scoreOneDisplay = document.querySelector('#score-one');
         const scoreTwoDisplay = document.querySelector('#score-two');
         const message = document.querySelector('#message');
@@ -242,7 +249,7 @@
         const finalScore = document.querySelector('#final-score');
         const keys = new Set();
         let ballX, ballY, velocityX, velocityY, rotation, gameSpeed, scoreOne, scoreTwo, running;
-        let playerOneY, playerTwoY, lastHit = 0;
+        let playerOneY, playerTwoY, lastHit = 0, restartTimer = 0;
 
         function resetGame() {
             ballX = game.clientWidth / 2;
@@ -260,9 +267,10 @@
             scoreTwoDisplay.textContent = scoreTwo;
         }
 
-        function showSlash(x, y) {
+        function showSlash(x, y, angle) {
             slash.style.left = `${x}px`;
             slash.style.top = `${y}px`;
+            slash.style.setProperty('--slash-angle', `${angle}deg`);
             slash.classList.remove('visible');
             void slash.offsetWidth;
             slash.classList.add('visible');
@@ -279,10 +287,10 @@
             const paddleWidth = playerOne.offsetWidth;
             const paddleGap = game.clientWidth * .07;
 
-            if (keys.has('w')) playerOneY -= 8;
-            if (keys.has('s')) playerOneY += 8;
-            if (keys.has('ArrowUp')) playerTwoY -= 8;
-            if (keys.has('ArrowDown')) playerTwoY += 8;
+            if (keys.has('w')) playerOneY -= 9.6;
+            if (keys.has('s')) playerOneY += 9.6;
+            if (keys.has('ArrowUp')) playerTwoY -= 9.6;
+            if (keys.has('ArrowDown')) playerTwoY += 9.6;
             playerOneY = Math.max(topLimit, Math.min(playerOneY, bottomLimit));
             playerTwoY = Math.max(topLimit, Math.min(playerTwoY, bottomLimit));
 
@@ -290,7 +298,7 @@
             ballY += velocityY;
             gameSpeed = Math.min(24, gameSpeed + .018);
             velocityX = Math.sign(velocityX) * gameSpeed;
-            velocityY = Math.sign(velocityY) * Math.min(12, Math.abs(velocityY) + .006);
+            velocityY = Math.sign(velocityY) * Math.min(16, Math.abs(velocityY) + .01);
             rotation += velocityX * 2.5;
             if (ballY <= topLimit || ballY >= bottomLimit) {
                 velocityY *= -1;
@@ -308,12 +316,12 @@
                 ballX = paddleGap + paddleWidth + ballSize / 2;
                 velocityX = gameSpeed;
                 velocityY += (ballY - playerOneY) * .035;
-                showSlash(paddleGap + paddleWidth, playerOneY);
+                showSlash(paddleGap + paddleWidth, playerOneY, 180);
             } else if (hitsPaddle(playerTwoY, false)) {
                 ballX = game.clientWidth - paddleGap - paddleWidth - ballSize / 2;
                 velocityX = -gameSpeed;
                 velocityY += (ballY - playerTwoY) * .035;
-                showSlash(game.clientWidth - paddleGap - paddleWidth, playerTwoY);
+                showSlash(game.clientWidth - paddleGap - paddleWidth, playerTwoY, 80);
             }
 
             if (ballX < -ballSize) { scoreTwo++; scoreTwoDisplay.textContent = scoreTwo; resetRound(1); }
@@ -323,11 +331,22 @@
             playerTwo.style.top = `${playerTwoY}px`;
             const ballTransform = `translate(${ballX - ballSize / 2}px, ${ballY - ballSize / 2}px) rotate(${rotation}deg)`;
             ball.style.transform = ballTransform;
-            fire.style.transform = `translate(${ballX - fire.offsetWidth / 2}px, ${ballY - fire.offsetHeight / 2}px) rotate(${rotation}deg)`;
+            const trailDirection = velocityX > 0 ? 0 : 180;
+            trail.style.transform = `translate(${ballX - trail.offsetWidth / 2}px, ${ballY - trail.offsetHeight / 2}px) rotate(${trailDirection}deg)`;
             requestAnimationFrame(update);
         }
 
         function resetRound(direction) {
+            if ((scoreOne === 6 && scoreTwo === 7) || (scoreOne === 7 && scoreTwo === 6)) {
+                running = false;
+                easteregg.classList.add('visible');
+                clearTimeout(restartTimer);
+                restartTimer = setTimeout(() => {
+                    easteregg.classList.remove('visible');
+                    resetGame();
+                }, 2500);
+                return;
+            }
             if (scoreOne >= 7 || scoreTwo >= 7) {
                 running = false;
                 winnerDisplay.textContent = scoreOne > scoreTwo ? 'Tung 1 venceu!' : 'Tung 2 venceu!';
