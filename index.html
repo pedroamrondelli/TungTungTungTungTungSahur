@@ -100,7 +100,7 @@
             transform: translateX(-50%);
         }
 
-        .player, #ball, #slash {
+        .player, #ball, #fire, #slash {
             position: absolute;
             user-select: none;
             pointer-events: none;
@@ -124,18 +124,45 @@
             transform-origin: center;
         }
 
+        #fire {
+            z-index: 2;
+            width: clamp(62px, 9vw, 108px);
+            height: clamp(62px, 9vw, 108px);
+            border-radius: 50% 45% 52% 48%;
+            background:
+                radial-gradient(circle at 68% 28%, #8e42d8 0 12%, transparent 27%),
+                radial-gradient(circle at 28% 34%, #1f8fff 0 14%, transparent 31%),
+                radial-gradient(circle at 72% 68%, #e62f42 0 22%, transparent 47%),
+                radial-gradient(circle at 37% 70%, #ff9d22 0 26%, transparent 56%);
+            filter: blur(4px) drop-shadow(0 0 10px #ef4a39);
+            animation: fire-flicker .3s infinite alternate, fire-colors 2.8s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes fire-flicker {
+            from { opacity: .82; scale: .9 .98; }
+            to { opacity: 1; scale: 1.08 .92; }
+        }
+
+        @keyframes fire-colors {
+            0%, 100% { filter: blur(4px) drop-shadow(0 0 10px #ff7b1c); }
+            35% { filter: blur(4px) drop-shadow(0 0 10px #ed3049); }
+            68% { filter: blur(4px) drop-shadow(0 0 10px #277cff); }
+            85% { filter: blur(4px) drop-shadow(0 0 10px #9145dc); }
+        }
+
         #slash {
             z-index: 5;
             display: none;
             width: clamp(110px, 15vw, 190px);
-            transform: translate(-50%, -50%) rotate(180deg);
+            transform: translate(-50%, -50%) rotate(80deg);
         }
 
         #slash.visible { display: block; animation: slash-hit .22s ease-out; }
 
         @keyframes slash-hit {
-            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(162deg); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(180deg); }
+            from { opacity: .2; transform: translate(-50%, -50%) scale(.65) rotate(62deg); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(80deg); }
         }
 
         #message {
@@ -190,6 +217,7 @@
         <div class="court-line" aria-hidden="true"></div>
         <img id="player-one" class="player" src="imagens/tung_1.png" alt="Tung 1, jogador 1">
         <img id="player-two" class="player" src="imagens/tung_2.png" alt="Tung 2, jogador 2">
+        <div id="fire" aria-hidden="true"></div>
         <img id="ball" src="imagens/bola.png" alt="Bola">
         <img id="slash" src="imagens/slash.gif" alt="">
 
@@ -205,6 +233,7 @@
         const ball = document.querySelector('#ball');
         const playerOne = document.querySelector('#player-one');
         const playerTwo = document.querySelector('#player-two');
+        const fire = document.querySelector('#fire');
         const slash = document.querySelector('#slash');
         const scoreOneDisplay = document.querySelector('#score-one');
         const scoreTwoDisplay = document.querySelector('#score-two');
@@ -259,8 +288,9 @@
 
             ballX += velocityX;
             ballY += velocityY;
-            gameSpeed = Math.min(15, gameSpeed + .008);
+            gameSpeed = Math.min(24, gameSpeed + .018);
             velocityX = Math.sign(velocityX) * gameSpeed;
+            velocityY = Math.sign(velocityY) * Math.min(12, Math.abs(velocityY) + .006);
             rotation += velocityX * 2.5;
             if (ballY <= topLimit || ballY >= bottomLimit) {
                 velocityY *= -1;
@@ -291,7 +321,9 @@
 
             playerOne.style.top = `${playerOneY}px`;
             playerTwo.style.top = `${playerTwoY}px`;
-            ball.style.transform = `translate(${ballX - ballSize / 2}px, ${ballY - ballSize / 2}px) rotate(${rotation}deg)`;
+            const ballTransform = `translate(${ballX - ballSize / 2}px, ${ballY - ballSize / 2}px) rotate(${rotation}deg)`;
+            ball.style.transform = ballTransform;
+            fire.style.transform = `translate(${ballX - fire.offsetWidth / 2}px, ${ballY - fire.offsetHeight / 2}px) rotate(${rotation}deg)`;
             requestAnimationFrame(update);
         }
 
