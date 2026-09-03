@@ -316,7 +316,7 @@
                 ballX = paddleGap + paddleWidth + ballSize / 2;
                 velocityX = gameSpeed;
                 velocityY += (ballY - playerOneY) * .035;
-                showSlash(paddleGap + paddleWidth, playerOneY, 180);
+                showSlash(paddleGap + paddleWidth, playerOneY, 80);
             } else if (hitsPaddle(playerTwoY, false)) {
                 ballX = game.clientWidth - paddleGap - paddleWidth - ballSize / 2;
                 velocityX = -gameSpeed;
